@@ -86,18 +86,15 @@ function authenticateToken(request, response, next) {
   }
 }
 // API 2
-app.post("/login/", async (request, response) => {
+app.post("/login", async (request, response) => {
   const { username, password } = request.body;
-  const selectUserQuery = `SELECT user_id FROM user WHERE username = '${username}';`;
-  const databaseUser = await database.get(selectUserQuery);
-  if (databaseUser === undefined) {
+  const selectUserQuery = `SELECT * FROM user WHERE username = '${username}'`;
+  const dbUser = await db.get(selectUserQuery);
+  if (dbUser === undefined) {
     response.status(400);
-    response.send("Invalid user");
+    response.send("Invalid User");
   } else {
-    const isPasswordMatched = await bcrypt.compare(
-      password,
-      databaseUser.password
-    );
+    const isPasswordMatched = await bcrypt.compare(password, dbUser.password);
     if (isPasswordMatched === true) {
       const payload = {
         username: username,
@@ -106,7 +103,7 @@ app.post("/login/", async (request, response) => {
       response.send({ jwtToken });
     } else {
       response.status(400);
-      response.send("Invalid password");
+      response.send("Invalid Password");
     }
   }
 });
@@ -134,4 +131,3 @@ app.get("/user/tweets/feed/", authenticateToken, async (request, response) => {
 app.get("/user/following/", authenticateToken, async (request, response) => {});
 
 module.exports = app;
--
